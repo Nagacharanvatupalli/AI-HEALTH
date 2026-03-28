@@ -15,7 +15,19 @@
                 <span class="logo-icon">🩺</span>
                 <h1 class="glow-text">MEDCONNECT</h1>
             </div>
-            <div class="user-profile-header" id="nav-profile-btn">
+
+            <nav class="header-nav">
+                <button class="nav-item active" data-view="feed-view">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Feed</span>
+                </button>
+                <button class="nav-item" data-view="search-view">
+                    <span class="nav-icon">🔍</span>
+                    <span class="nav-label">Search</span>
+                </button>
+            </nav>
+
+            <div class="user-profile-header nav-item" id="nav-profile-btn" data-view="profile-view">
                 <div class="avatar-circle" id="user-avatar-initials">DS</div>
                 <div class="user-info-mini">
                     <span id="user-name-display">Dr. Smith</span>
@@ -136,21 +148,7 @@
             <span>+</span>
         </button>
 
-        <!-- BOTTOM NAVIGATION -->
-        <nav class="bottom-nav glass-panel">
-            <button class="nav-item active" data-view="feed-view">
-                <span class="nav-icon">🏠</span>
-                <span class="nav-label">Feed</span>
-            </button>
-            <button class="nav-item" data-view="search-view">
-                <span class="nav-icon">🔍</span>
-                <span class="nav-label">Search</span>
-            </button>
-            <button class="nav-item" data-view="profile-view">
-                <span class="nav-icon">👤</span>
-                <span class="nav-label">Profile</span>
-            </button>
-        </nav>
+
 
         <!-- CREATE POST MODAL -->
         <div id="post-modal" class="modal hidden">
