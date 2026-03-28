@@ -965,23 +965,40 @@ The JSON structure MUST use these exact keys:
     }
 });
 
-router.post('/analyze-doctor', async (req, res) => {
+router.post('/analyze-doctor', upload.array('images', 5), async (req, res) => {
     try {
-        const { theme, partName, description } = req.body;
+        const { theme, partName, bp, sugar, heartbeat, bloodlevel, symptoms, painIntensity, painStart } = req.body;
 
-        const prompt = `Medical explanation for anatomy structure.
+        const uploadedFilesCount = req.files ? req.files.length : 0;
+        const uploadNote = uploadedFilesCount > 0 ? `[Note: Patient provided ${uploadedFilesCount} scanning reports/images.]\n` : '';
+
+        const prompt = `You are a strict clinical AI performing a live diagnosis.
 System: ${theme}
-Structure: ${partName}
-Doctor Question/Description: ${description}
+Structure Focused On: ${partName}
 
-Please provide a structured response, preferably as valid JSON with the following keys:
+Patient Symptoms and Vitals Provided:
+- Blood Pressure: ${bp || 'Not provided'}
+- Sugar Level: ${sugar || 'Not provided'}
+- Heart Rate: ${heartbeat || 'Not provided'}
+- Blood Level: ${bloodlevel || 'Not provided'}
+- Symptoms: ${symptoms || 'None'}
+- Pain Intensity: ${painIntensity || 'Normal'}
+- When Pain Started: ${painStart || 'Not provided'}
+${uploadNote}
+
+CRITICAL RULES:
+1. ABSOLUTELY NO TEXTBOOK DEFINITIONS. Do NOT tell the doctor what the ${partName} is. They already know.
+2. Every single sentence MUST be a dynamic analysis of the patient's submitted form data.
+3. If they change the inputs, your entire generated response must change dramatically.
+
+Return valid JSON using strictly these keys:
 {
-  "anatomyDescription": "Detailed anatomy description",
-  "function": "Function of the structure",
-  "commonDisorders": ["disorder 1", "disorder 2"],
-  "symptoms": ["symptom 1", "symptom 2"],
-  "clinicalRelevance": "Clinical relevance explanation",
-  "diagnosticMethods": ["method 1", "method 2"]
+  "anatomyDescription": "Analyze the anatomical state of the ${partName} specifically given the patient's exact BP, Sugar, and Symptoms. No boilerplate definitions.",
+  "function": "Describe ONLY how the patient's specific presentation is impacting the normal function of this structure.",
+  "commonDisorders": ["List 2-3 specific, dynamic potential diagnoses derived PURELY from the numerical vitals and text symptoms provided."],
+  "symptoms": ["Detailed dynamic breakdown of why the patient has these exact symptoms and numbers.", "Pathological correlation."],
+  "clinicalRelevance": "Urgency assessment (e.g., Code Red, observation) derived entirely from their specific pain intensity and vitals.",
+  "diagnosticMethods": ["What exact imaging or lab test is needed right now for this patient's numbers?"]
 }`;
         const data = await callGeminiWithRetry(prompt, 'You are an advanced AI medical assistant providing anatomical analysis to doctors.');
         const resultText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '{}';

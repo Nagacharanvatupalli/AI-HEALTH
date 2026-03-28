@@ -1551,11 +1551,23 @@ const app = {
         e.preventDefault();
         VoiceAssistant.stop();
 
-        const payload = {
-            theme: app.state.doctor.theme,
-            partName: app.state.currentPart,
-            description: document.getElementById('doc-description').value
-        };
+        const formData = new FormData();
+        formData.append('theme', app.state.doctor.theme);
+        formData.append('partName', app.state.currentPart);
+        formData.append('bp', document.getElementById('doc-bp').value);
+        formData.append('sugar', document.getElementById('doc-sugar').value);
+        formData.append('heartbeat', document.getElementById('doc-heartbeat').value);
+        formData.append('bloodlevel', document.getElementById('doc-bloodlevel').value || '');
+        formData.append('symptoms', document.getElementById('doc-symptoms').value);
+        formData.append('painIntensity', document.getElementById('doc-pain-intensity').value);
+        formData.append('painStart', document.getElementById('doc-pain-start').value);
+
+        const fileInput = document.getElementById('doc-scanning-reports');
+        if (fileInput && fileInput.files.length > 0) {
+            for (let i = 0; i < fileInput.files.length; i++) {
+                formData.append('images', fileInput.files[i]);
+            }
+        }
 
         document.getElementById('doc-form').style.display = 'none';
         document.getElementById('doctor-loading').classList.remove('hidden');
@@ -1563,8 +1575,7 @@ const app = {
         try {
             const res = await fetch('http://localhost:3000/api/analyze-doctor', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: formData
             });
             const data = await res.json();
 

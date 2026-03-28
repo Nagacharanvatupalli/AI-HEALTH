@@ -400,9 +400,47 @@
                     <h3 class="glow-text"><span id="doc-part-name"></span></h3>
                     <form id="doc-form" onsubmit="app.submitDoctorAnalysis(event)">
                         <input type="hidden" id="doc-part-id">
+                        <div class="form-group row">
+                            <div class="col">
+                                <label>Blood Pressure (BP)</label>
+                                <input type="text" id="doc-bp" required>
+                            </div>
+                            <div class="col">
+                                <label>Sugar</label>
+                                <input type="number" id="doc-sugar" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col">
+                                <label>Heart Beat</label>
+                                <input type="number" id="doc-heartbeat" required>
+                            </div>
+                            <div class="col">
+                                <label>Blood Level (Optional)</label>
+                                <input type="text" id="doc-bloodlevel">
+                            </div>
+                        </div>
                         <div class="form-group">
-                            <label>Doctor Question / Description</label>
-                            <textarea id="doc-description" rows="4" required></textarea>
+                            <label>Symptoms</label>
+                            <input type="text" id="doc-symptoms" required>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col">
+                                <label>Pain Intensity</label>
+                                <select id="doc-pain-intensity" required>
+                                    <option value="Low">Low</option>
+                                    <option value="Normal">Normal</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label>When activity pain started</label>
+                                <input type="text" id="doc-pain-start" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Scanning Reports (Optional)</label>
+                            <input type="file" id="doc-scanning-reports" accept="image/*" multiple class="file-upload-input" style="color: var(--text-main); background: rgba(0,0,0,0.3); border: 1px solid var(--neon-blue); padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; font-family: 'Rajdhani', sans-serif;">
                         </div>
                         <div class="modal-actions">
                             <button type="button" class="btn-cancel" onclick="app.closeDoctorModal()">Cancel</button>
