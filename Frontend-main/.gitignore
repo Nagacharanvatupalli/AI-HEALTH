@@ -1,0 +1,15 @@
+.vercel
+.env
+node_modules/
+*.txt
+*.log
+
+.env
+
+node_modules
+
+node_modules
+
+.env
+
+main page.zip

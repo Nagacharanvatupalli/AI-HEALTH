@@ -1,0 +1,27 @@
+[
+  {
+    "children": [
+      1,
+      2
+    ],
+    "name": "group1"
+  },
+  {
+    "mesh": 0,
+    "name": "female_skin",
+    "extras": {
+      "currentUVSet": "map1"
+    }
+  },
+  {
+    "mesh": 1,
+    "name": "nervous_system",
+    "extras": {
+      "currentUVSet": "MaterialLOD"
+    }
+  },
+  {
+    "mesh": 2,
+    "name": "LabelGroup2"
+  }
+]

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:,">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Futuristic AI Medical Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- jsPDF for PDF Report Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- JSDiff for Text Comparison -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/5.1.0/diff.min.js"></script>
+</head>
+
+<body>
+    <div id="app">
+        <!-- GLOBAL LANGUAGE TOGGLE -->
+        <div class="language-toggle-container">
+            <button class="lang-btn active" id="lang-en" onclick="app.setLanguage('en')">English</button>
+            <button class="lang-btn" id="lang-te" onclick="app.setLanguage('te')">తెలుగు</button>
+        </div>
+
+        <!-- ROLE SELECTION VIEW -->
+        <section id="role-selection" class="view active">
+            <h1 class="glow-text">AI MEDICAL NEXUS</h1>
+            <p class="subtitle">Select Your Access Level</p>
+            <div class="cards-container">
+                <div class="role-card" onclick="app.showView('patient-login')">
+                    <div class="card-icon">🧍</div>
+                    <h2>PATIENT PORTAL</h2>
+                    <p>Access your 3D health dashboard and AI diagnostics.</p>
+                </div>
+                <div class="role-card" onclick="app.showView('doctor-login')">
+                    <div class="card-icon">👨‍⚕️</div>
+                    <h2>DOCTOR TERMINAL</h2>
+                    <p>Advanced anatomical analysis and patient data.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PATIENT LOGIN VIEW -->
+        <section id="patient-login" class="view hidden">
+            <button class="back-btn" onclick="app.showView('role-selection')">← Back</button>
+            <div class="form-container glass-panel">
+                <h2 class="glow-text">PATIENT VERIFICATION</h2>
+                <form id="patient-login-form" onsubmit="app.handlePatientLogin(event)">
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" id="patient-name" required>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col">
+                            <label>Gender *</label>
+                            <select id="patient-gender" required>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label>Age *</label>
+                            <input type="number" id="patient-age" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col">
+                            <label>Blood Pressure</label>
+                            <input type="text" id="patient-bp" placeholder="e.g. 120/80">
+                        </div>
+                        <div class="col">
+                            <label>Sugar Level</label>
+                            <input type="number" id="patient-sugar" placeholder="e.g. 100">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col">
+                            <label>Heart Rate (bpm)</label>
+                            <input type="number" id="patient-hr" placeholder="e.g. 75">
+                        </div>
+                        <div class="col"></div>
+                    </div>
+                    <button type="submit" class="cyber-btn">INITIALIZE DASHBOARD</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- DOCTOR LOGIN VIEW -->
+        <section id="doctor-login" class="view hidden">
+            <button class="back-btn" onclick="app.showView('role-selection')">← Back</button>
+            <div class="form-container glass-panel">
+                <h2 class="glow-text">SECURE DOCTOR LOGIN</h2>
+                <form id="doctor-login-form" onsubmit="app.handleDoctorLogin(event)">
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="doctor-email" value="aidoctor@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" id="doctor-password" value="123456789" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Doctor Name *</label>
+                        <input type="text" id="doctor-name" value="Dr. AI Specialist" required>
+                    </div>
+                    <div class="form-group">
+                        <label>System Theme *</label>
+                        <select id="doctor-theme" required>
+                            <option value="Nervous System">Nervous System</option>
+                            <option value="Circulatory System">Circulatory System</option>
+                            <option value="Respiratory System">Respiratory System</option>
+                            <option value="Skeletal System">Skeletal System</option>
+                            <option value="Heart">Heart</option>
+                            <option value="Kidneys">Kidneys</option>
+                            <option value="Lungs">Lungs</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="cyber-btn">AUTHENTICATE</button>
+                    <p id="doctor-error" class="error-msg"></p>
+                </form>
+            </div>
+        </section>
+
+        <!-- PATIENT 3D ANATOMY PAGE -->
+        <section id="patient-anatomy" class="view hidden">
+            <div class="corner-panel top-left glass-panel">
+                <div class="patient-info">
+                    <span id="display-p-name"></span> |
+                    <span id="display-p-age"></span> |
+                    <span id="display-p-gender"></span>
+                </div>
+                <div class="vitals" style="margin-top: 10px;">
+                    <div class="heartbeat-indicator"></div>
+                    <span class="vital-badge" id="display-p-hr">HR: --</span>
+                    <span class="vital-badge" id="display-p-bp">BP: --</span>
+                    <span class="vital-badge" id="display-p-sugar">Sugar: --</span>
+                </div>
+            </div>
+            <div class="corner-panel top-right glass-panel">
+                <button class="logout-btn" onclick="app.showView('role-selection')">Logout</button>
+            </div>
+
+            <!-- Holographic Background Elements -->
+            <div class="holo-bg ecg-lines"></div>
+            <div class="holo-bg hex-1"></div>
+            <div class="holo-bg hex-2"></div>
+            <div class="holo-bg hex-3"></div>
+
+            <div id="patient-canvas-container" class="canvas-container">
+                <!-- Three.js Canvas injects here -->
+                <div class="hologram-shadow"></div>
+            </div>
+
+            <!-- Health Suggestions Panel -->
+            <div class="side-panel right-panel glass-panel hidden" id="health-suggestions-panel">
+                <h3 class="glow-text" style="font-size: 18px; text-align: center; margin-bottom: 15px;">AI HEALTH
+                    INSIGHTS</h3>
+                <div id="health-suggestions-content">
+                    <div class="loading hidden" id="health-loading">
+                        <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
+                        <p style="font-size: 12px; color: var(--text-muted); text-align: center; margin-top: 5px;">
+                            Analyzing vitals...</p>
+                    </div>
+                    <ul id="health-suggestions-list" class="animated-list">
+                        <!-- Items injected here -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Patient Pain Form Modal -->
+            <div id="pain-modal" class="modal hidden">
+                <div class="modal-content glass-panel">
+                    <h3 class="glow-text"><span id="pain-modal-title">Pain Assessment</span> – <span
+                            id="pain-part-name"></span></h3>
+                    <form id="pain-form" onsubmit="app.submitPatientAnalysis(event)">
+                        <input type="hidden" id="pain-part-id">
+                        <div class="form-group">
+                            <label>Pain Intensity</label>
+                            <select id="pain-intensity" required>
+                                <option value="Low">Low</option>
+                                <option value="Normal">Normal</option>
+                                <option value="High">High</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pain Duration (days)</label>
+                            <input type="number" id="pain-duration" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Activity when pain started</label>
+                            <input type="text" id="pain-activity" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Swelling?</label>
+                            <select id="pain-swelling" required>
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Previous Injury?</label>
+                            <select id="pain-injury" required>
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Other symptoms</label>
+                            <input type="text" id="pain-symptoms">
+                        </div>
+                        <div class="form-group">
+                            <div style="display: flex; gap: 12px; align-items: flex-end;">
+                                <div style="flex: 1;">
+                                    <label>Upload image of pain site (Optional)</label>
+                                    <input type="file" id="pain-image" accept="image/*" class="file-upload-input" style="color: var(--text-main); background: rgba(0,0,0,0.3); border: 1px solid var(--neon-blue); padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; font-family: 'Rajdhani', sans-serif;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label>Upload X-Ray (Optional)</label>
+                                    <input type="file" id="pain-xray" accept="image/*,.pdf" class="file-upload-input" style="color: var(--text-main); background: rgba(0,0,0,0.3); border: 1px solid var(--neon-blue); padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; font-family: 'Rajdhani', sans-serif;">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn-cancel" onclick="app.closePainModal()">Cancel</button>
+                            <button type="submit" class="cyber-btn">Analyze</button>
+                        </div>
+                    </form>
+
+                    <div id="patient-loading" class="loading hidden">
+                        <div class="spinner"></div>
+                        <p>Perplexity AI Analysis in progress...</p>
+                    </div>
+
+                    <div id="patient-results" class="results-container hidden">
+                        <!-- Results injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DOCTOR SYSTEM PAGE -->
+        <section id="doctor-anatomy" class="view hidden">
+            <div class="corner-panel top-left glass-panel">
+                <h2 id="display-d-name" class="glow-text" style="margin-bottom: 5px; font-size: 24px;">Doctor Name</h2>
+                <div class="theme-info" style="color: var(--text-muted); font-size: 14px; letter-spacing: 1px;">Theme:
+                    <span id="display-d-theme" style="color: var(--text-main);"></span>
+                </div>
+            </div>
+            <div class="corner-panel top-right glass-panel">
+                <button class="logout-btn" onclick="app.showView('role-selection')">Logout</button>
+            </div>
+
+            <!-- Neural Signal Monitor (Left Panel) -->
+            <div id="ns-left-panel" class="neural-panel hidden">
+                <div class="neural-header">
+                    <div class="neural-pulse-dot"></div>
+                    <h3>NEURAL SIGNAL MONITOR</h3>
+                </div>
+
+                <div class="neural-viz-container">
+                    <div class="neural-pathway">
+                        <div class="neural-node brain-node">
+                            <span class="node-label">BRAIN</span>
+                            <div class="node-core"></div>
+                            <div class="node-ripple"></div>
+                        </div>
+                        <div class="neural-line">
+                            <div class="neural-impulse"></div>
+                            <div class="neural-particles"></div>
+                        </div>
+                        <div class="neural-node spine-node">
+                            <span class="node-label">SPINE</span>
+                            <div class="node-core"></div>
+                            <div class="node-ripple"></div>
+                        </div>
+                        <div class="neural-line">
+                            <div class="neural-impulse delay-1"></div>
+                            <div class="neural-particles"></div>
+                        </div>
+                        <div class="neural-node limb-node">
+                            <span class="node-label">LIMB</span>
+                            <div class="node-core"></div>
+                            <div class="node-ripple"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="neural-metrics">
+                    <div class="metric-box">
+                        <span class="m-label">SIGNAL SPEED</span>
+                        <span id="ns-speed" class="m-value glow-text">110 m/s</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="m-label">TRANSMISSION</span>
+                        <span id="ns-status" class="m-value text-success">ACTIVE</span>
+                    </div>
+                    <div class="metric-box">
+                        <span class="m-label">RESPONSE TIME</span>
+                        <span id="ns-response" class="m-value">0.12 s</span>
+                    </div>
+                </div>
+
+                <div class="waveform-container">
+                    <div class="waveform-bar">
+                        <div class="waveform-line"></div>
+                        <div class="waveform-line"></div>
+                        <div class="waveform-line"></div>
+                        <div class="waveform-line"></div>
+                        <div class="waveform-line"></div>
+                        <div class="waveform-line"></div>
+                        <div class="waveform-line"></div>
+                        <div class="waveform-line"></div>
+                        <div class="waveform-line"></div>
+                        <div class="waveform-line"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="doctor-canvas-container" class="canvas-container">
+                <!-- Three.js Canvas injects here -->
+            </div>
+
+
+
+            <!-- Doctor Edit Patient Request Modal -->
+            <div id="doctor-request-modal" class="modal hidden">
+                <div class="modal-content glass-panel" style="max-width: 600px; width: 90%;">
+                    <h3 class="glow-text">Verify Patient AI Analysis - <span id="req-patient-name"></span></h3>
+                    <p style="color:var(--text-muted); margin-bottom: 15px;">Case ID: <span id="req-case-id"></span> |
+                        Part: <span id="req-part-name"></span></p>
+                    <div class="form-group">
+                        <label>AI Analysis JSON (Edit directly if changes required)</label>
+                        <textarea id="req-json-editor" rows="15"
+                            style="width: 100%; font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.5); color: #00ffcc; border: 1px solid var(--neon-blue); padding: 10px;"></textarea>
+                    </div>
+                    <div class="modal-actions" style="margin-top: 20px;">
+                        <button class="btn-cancel" onclick="app.closeDoctorRequestModal()">Cancel</button>
+                        <button class="cyber-btn" onclick="app.approveDoctorRequest('agreed')"
+                            style="background: rgba(0, 255, 0, 0.2); border-color: green;">Approve As Is</button>
+                        <button class="cyber-btn" onclick="app.approveDoctorRequest('modified')"
+                            style="background: rgba(255, 165, 0, 0.2); border-color: orange;">Approve With
+                            Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doctor Part Form Modal -->
+            <div id="doctor-modal" class="modal hidden">
+                <div class="modal-content glass-panel">
+                    <h3 class="glow-text"><span id="doc-part-name"></span></h3>
+                    <form id="doc-form" onsubmit="app.submitDoctorAnalysis(event)">
+                        <input type="hidden" id="doc-part-id">
+                        <div class="form-group">
+                            <label>Doctor Question / Description</label>
+                            <textarea id="doc-description" rows="4" required></textarea>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="btn-cancel" onclick="app.closeDoctorModal()">Cancel</button>
+                            <button type="submit" class="cyber-btn">Analyze Structure</button>
+                        </div>
+                    </form>
+
+                    <div id="doctor-loading" class="loading hidden">
+                        <div class="spinner"></div>
+                        <p>Perplexity AI Analysis in progress...</p>
+                    </div>
+
+                    <div id="doctor-results" class="results-container hidden">
+                        <!-- Results injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <!-- TensorFlow.js and MobileNet -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@latest"></script>
+
+    <!-- Application Logic -->
+    <script src="/js/three-patient.js?v=2"></script>
+    <script src="/js/three-doctor.js?v=2"></script>
+    <script src="/js/app.js?v=2"></script>
+</body>
+
+</html>

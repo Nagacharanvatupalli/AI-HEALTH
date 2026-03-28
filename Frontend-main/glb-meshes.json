@@ -1,0 +1,62 @@
+[
+  {
+    "primitives": [
+      {
+        "attributes": {
+          "POSITION": 1,
+          "NORMAL": 2,
+          "TEXCOORD_0": 3
+        },
+        "indices": 0,
+        "material": 0
+      }
+    ],
+    "name": "female_skin"
+  },
+  {
+    "primitives": [
+      {
+        "attributes": {
+          "POSITION": 5,
+          "NORMAL": 6,
+          "TEXCOORD_0": 7
+        },
+        "indices": 4,
+        "material": 1
+      }
+    ],
+    "name": "nervous_system"
+  },
+  {
+    "primitives": [
+      {
+        "attributes": {
+          "POSITION": 9,
+          "NORMAL": 10,
+          "TEXCOORD_0": 11
+        },
+        "indices": 8,
+        "material": 2
+      },
+      {
+        "attributes": {
+          "POSITION": 13,
+          "NORMAL": 14,
+          "TEXCOORD_0": 15
+        },
+        "indices": 12,
+        "material": 3
+      },
+      {
+        "attributes": {
+          "POSITION": 17,
+          "NORMAL": 18,
+          "TEXCOORD_0": 19
+        },
+        "indices": 16,
+        "material": 4
+      }
+    ],
+    "name": "LabelGroup2"
+  }
+]

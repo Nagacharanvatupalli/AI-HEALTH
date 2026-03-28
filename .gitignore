@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build outputs
+dist/
+build/
+
+# Logs & temp files
+*.log
+*.txt
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temp/debug files
+tmp/
+api_temp/
+tmp_payload_*.json
+tmp_pplx_*.json
+debug-log.txt
+push_log.txt
+response-test.json
+err.txt
+keys_output.txt
+out.txt
+out2.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Vercel
+.vercel/
+
+# Gemini
+.gemini/
+brain/
+
+# Package locks (keep these for reproducibility)
+# package-lock.json
