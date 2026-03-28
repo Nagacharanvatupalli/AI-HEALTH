@@ -1039,3 +1039,54 @@ textarea:focus {
     gap: 10px;
     margin-top: 20px;
 }
+
+/* ==========================================
+   MEDCONNECT — 3rd Card & Login CSS
+   ========================================== */
+:root {
+    --mc-accent: #b400ff;
+    --mc-glow: rgba(180, 0, 255, 0.4);
+    --mc-border: rgba(180, 0, 255, 0.35);
+}
+
+.cards-container {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.medconnect-card {
+    border-color: var(--mc-border);
+    position: relative;
+    overflow: hidden;
+}
+
+.medconnect-card:hover {
+    box-shadow: 0 0 30px var(--mc-glow);
+    border-color: var(--mc-accent);
+}
+
+.medconnect-card h2 {
+    color: var(--mc-accent);
+    text-shadow: 0 0 10px var(--mc-accent), 0 0 20px var(--mc-glow);
+}
+
+.medconnect-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: var(--mc-accent);
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px var(--mc-glow);
+    animation: badgePulse 2s infinite alternate;
+}
+
+@keyframes badgePulse {
+    0%  { box-shadow: 0 0 6px var(--mc-glow); }
+    100%{ box-shadow: 0 0 18px var(--mc-accent); }
+}

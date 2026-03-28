@@ -54,6 +54,13 @@ app.get('/doctor/*', (req, res) => {
     res.sendFile(path.join(doctorPortalPath, 'index.html'));
 });
 
+// Serve MedConnect SPA
+const medConnectPath = path.join(hackathonPublicPath, 'medconnect');
+app.use('/medconnect', express.static(medConnectPath));
+app.get('/medconnect/*', (req, res) => {
+    res.sendFile(path.join(medConnectPath, 'index.html'));
+});
+
 // API routes
 app.use('/api', apiRoutes);
 

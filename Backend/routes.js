@@ -1371,4 +1371,291 @@ router.post('/tts', async (req, res) => {
     }
 });
 
+// ============================================================
+// MEDCONNECT — Doctor Social Network Routes
+// ============================================================
+const MedConnectUser = require('./medconnectUserModel');
+const Post = require('./postModel');
+
+const medConnectJwt = process.env.JWT_SECRET || 'super-secret-doctor-key-12345';
+
+// Middleware to verify MedConnect JWT
+function medAuth(req, res, next) {
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ message: 'Unauthorized' });
+    try {
+        const decoded = jwt.verify(auth.split(' ')[1], medConnectJwt);
+        req.medDoctor = decoded;
+        next();
+    } catch (e) {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
+}
+
+// POST /api/medconnect/register
+router.post('/medconnect/register', async (req, res) => {
+    try {
+        const { name, password, specialty } = req.body;
+        if (!name || !password) return res.status(400).json({ message: 'Name and password required' });
+        const existing = await MedConnectUser.findOne({ name: new RegExp(`^${name}$`, 'i') });
+        if (existing) return res.status(409).json({ message: 'Name already taken' });
+        const user = await MedConnectUser.create({ name, password, specialty: specialty || 'General' });
+        const token = jwt.sign({ id: user._id, name: user.name, specialty: user.specialty }, medConnectJwt, { expiresIn: '7d' });
+        res.json({ token, id: user._id, name: user.name, specialty: user.specialty });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// POST /api/medconnect/login
+router.post('/medconnect/login', async (req, res) => {
+    try {
+        const { name, password } = req.body;
+        if (!name || !password) return res.status(400).json({ message: 'Name and password required' });
+        const user = await MedConnectUser.findOne({ name: new RegExp(`^${name}$`, 'i') });
+        if (!user || user.password !== password) return res.status(401).json({ message: 'Invalid credentials' });
+        const token = jwt.sign({ id: user._id, name: user.name, specialty: user.specialty }, medConnectJwt, { expiresIn: '7d' });
+        res.json({ token, id: user._id, name: user.name, specialty: user.specialty });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// GET /api/medconnect/posts — all posts newest first
+router.get('/medconnect/posts', async (req, res) => {
+    try {
+        const posts = await Post.find().sort({ createdAt: -1 }).limit(50);
+        res.json(posts);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// POST /api/medconnect/posts — create a post (expanded medical fields)
+router.post('/medconnect/posts', medAuth, upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'labTests', maxCount: 1 },
+    { name: 'scanningReports', maxCount: 1 },
+    { name: 'clinicalNotes', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const { 
+            text, tags, symptoms, duration, age, gender, bp, sugar, heartRate 
+        } = req.body;
+        
+        if (!text || !text.trim()) return res.status(400).json({ message: 'Text is required' });
+        
+        const parsedTags = tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim()).filter(Boolean)) : [];
+        
+        // Handle images
+        const imageUrl = req.files['image'] ? req.files['image'][0].filename : null;
+        const labTestFindingImages = req.files['labTests'] ? req.files['labTests'].map(f => f.filename) : [];
+        const scanningReportsImages = req.files['scanningReports'] ? req.files['scanningReports'].map(f => f.filename) : [];
+        const clinicalNotesImages = req.files['clinicalNotes'] ? req.files['clinicalNotes'].map(f => f.filename) : [];
+
+        const post = await Post.create({
+            authorId: req.medDoctor.id,
+            authorName: req.medDoctor.name,
+            authorSpecialty: req.medDoctor.specialty,
+            text: text.trim(),
+            imageUrl,
+            
+            // New medical fields
+            symptoms,
+            duration,
+            age,
+            gender,
+            labTestFindingImages,
+            scanningReportsImages,
+            clinicalNotesImages,
+            bp,
+            sugar,
+            heartRate,
+            
+            tags: parsedTags
+        });
+        res.json(post);
+    } catch (err) {
+        console.error('Create Post Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// POST /api/medconnect/posts/:id/comment — add comment
+router.post('/medconnect/posts/:id/comment', medAuth, async (req, res) => {
+    try {
+        const { text } = req.body;
+        if (!text || !text.trim()) return res.status(400).json({ message: 'Comment text required' });
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        const comment = { authorId: req.medDoctor.id, authorName: req.medDoctor.name, authorSpecialty: req.medDoctor.specialty, text: text.trim() };
+        post.comments.push(comment);
+        await post.save();
+        // Notify post author if it's not themselves
+        if (String(post.authorId) !== String(req.medDoctor.id)) {
+            await MedConnectUser.findByIdAndUpdate(post.authorId, {
+                $push: { notifications: { type: 'comment', fromDoctorName: req.medDoctor.name, postId: post._id, postTextSnippet: post.text.substring(0, 60) } }
+            });
+        }
+        res.json(post);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// POST /api/medconnect/posts/:id/agree — toggle agree
+router.post('/medconnect/posts/:id/agree', medAuth, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        const userId = req.medDoctor.id;
+        const alreadyAgreed = post.agrees.map(String).includes(String(userId));
+        if (alreadyAgreed) {
+            post.agrees = post.agrees.filter(id => String(id) !== String(userId));
+        } else {
+            post.agrees.push(userId);
+            post.disagrees = post.disagrees.filter(id => String(id) !== String(userId));
+            if (String(post.authorId) !== String(userId)) {
+                await MedConnectUser.findByIdAndUpdate(post.authorId, {
+                    $push: { notifications: { type: 'agree', fromDoctorName: req.medDoctor.name, postId: post._id, postTextSnippet: post.text.substring(0, 60) } }
+                });
+            }
+        }
+        await post.save();
+        res.json({ agrees: post.agrees.length, disagrees: post.disagrees.length, userAgreed: !alreadyAgreed, userDisagreed: false });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// POST /api/medconnect/posts/:id/disagree — toggle disagree
+router.post('/medconnect/posts/:id/disagree', medAuth, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        const userId = req.medDoctor.id;
+        const alreadyDisagreed = post.disagrees.map(String).includes(String(userId));
+        if (alreadyDisagreed) {
+            post.disagrees = post.disagrees.filter(id => String(id) !== String(userId));
+        } else {
+            post.disagrees.push(userId);
+            post.agrees = post.agrees.filter(id => String(id) !== String(userId));
+            if (String(post.authorId) !== String(userId)) {
+                await MedConnectUser.findByIdAndUpdate(post.authorId, {
+                    $push: { notifications: { type: 'disagree', fromDoctorName: req.medDoctor.name, postId: post._id, postTextSnippet: post.text.substring(0, 60) } }
+                });
+            }
+        }
+        await post.save();
+        res.json({ agrees: post.agrees.length, disagrees: post.disagrees.length, userAgreed: false, userDisagreed: !alreadyDisagreed });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// GET /api/medconnect/search?q= — search posts, doctors, tags (Enhanced with medical criteria)
+router.get('/medconnect/search', async (req, res) => {
+    try {
+        const { 
+            q, symptoms, age, gender, bp, sugar, heartRate, duration
+        } = req.query;
+
+        const results = {
+            posts: [],
+            relatedPosts: [],
+            doctors: []
+        };
+
+        // 1. Search Doctors (Legacy logic)
+        if (q) {
+            const drRegex = new RegExp(q, 'i');
+            results.doctors = await MedConnectUser.find({ 
+                $or: [{ name: drRegex }, { specialty: drRegex }, { bio: drRegex }] 
+            }).select('-password -notifications').limit(10);
+        }
+
+        // 2. Search Posts (Structured + Weighted)
+        const criteria = {};
+        if (symptoms) criteria.symptoms = new RegExp(symptoms, 'i');
+        if (age) criteria.age = age;
+        if (gender) criteria.gender = gender;
+        if (bp) criteria.bp = bp;
+        if (sugar) criteria.sugar = sugar;
+        if (heartRate) criteria.heartRate = heartRate;
+        if (duration) criteria.duration = new RegExp(duration, 'i');
+
+        // If no structured criteria, use legacy text search
+        if (Object.keys(criteria).length === 0) {
+            if (q) {
+                const postRegex = new RegExp(q, 'i');
+                results.posts = await Post.find({ 
+                    $or: [{ text: postRegex }, { tags: postRegex }, { authorName: postRegex }, { symptoms: postRegex }] 
+                }).sort({ createdAt: -1 }).limit(20);
+            }
+        } else {
+            // Case 1: Exact matches (ALL criteria meet)
+            results.posts = await Post.find(criteria).sort({ createdAt: -1 }).limit(20);
+
+            // Case 2: Partial matches (Related data)
+            // We search for posts matching ANY of the criteria but not already in the 'posts' list
+            const matchedIds = results.posts.map(p => p._id);
+            const orCriteria = Object.keys(criteria).map(key => ({ [key]: criteria[key] }));
+            
+            results.relatedPosts = await Post.find({
+                $and: [
+                    { _id: { $nin: matchedIds } },
+                    { $or: orCriteria }
+                ]
+            }).sort({ createdAt: -1 }).limit(20);
+        }
+
+        // Check if anything found at all
+        if (results.posts.length === 0 && results.relatedPosts.length === 0 && results.doctors.length === 0) {
+            return res.json({ message: "No data available", posts: [], relatedPosts: [], doctors: [] });
+        }
+
+        res.json(results);
+    } catch (err) {
+        console.error('Search Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// GET /api/medconnect/profile/:doctorId
+router.get('/medconnect/profile/:doctorId', async (req, res) => {
+    try {
+        const user = await MedConnectUser.findById(req.params.doctorId).select('-password');
+        if (!user) return res.status(404).json({ message: 'Doctor not found' });
+        const posts = await Post.find({ authorId: user._id }).sort({ createdAt: -1 });
+        // Mark notifications as read
+        await MedConnectUser.findByIdAndUpdate(user._id, { $set: { 'notifications.$[].read': true } });
+        res.json({ user, posts });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// GET /api/medconnect/suggested/:doctorId — posts from same specialty domain
+router.get('/medconnect/suggested/:doctorId', medAuth, async (req, res) => {
+    try {
+        const specialty = req.medDoctor.specialty;
+        const posts = await Post.find({ authorSpecialty: specialty, authorId: { $ne: req.medDoctor.id } }).sort({ createdAt: -1 }).limit(10);
+        res.json(posts);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// GET /api/medconnect/notifications — unread count for logged-in user
+router.get('/medconnect/notifications', medAuth, async (req, res) => {
+    try {
+        const user = await MedConnectUser.findById(req.medDoctor.id).select('notifications');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        res.json({ notifications: user.notifications, unread: user.notifications.filter(n => !n.read).length });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;
+

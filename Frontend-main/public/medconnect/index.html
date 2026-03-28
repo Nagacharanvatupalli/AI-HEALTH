@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedConnect | Doctor Knowledge Network</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- TOP NAVIGATION -->
+        <header class="top-nav glass-panel">
+            <div class="logo">
+                <span class="logo-icon">🩺</span>
+                <h1 class="glow-text">MEDCONNECT</h1>
+            </div>
+            <div class="user-profile-header" id="nav-profile-btn">
+                <div class="avatar-circle" id="user-avatar-initials">DS</div>
+                <div class="user-info-mini">
+                    <span id="user-name-display">Dr. Smith</span>
+                    <span id="user-specialty-display">Cardiology</span>
+                </div>
+                <div class="notification-bell" id="notif-btn">
+                    🔔<span class="notif-count hidden" id="notif-badge">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main id="main-content">
+            <!-- Feed View (Default) -->
+            <section id="feed-view" class="view active">
+                <div class="suggested-posts-container" id="suggested-posts">
+                    <h3 class="section-title">SUGGESTED FOR YOUR DOMAIN</h3>
+                    <div class="horizontal-scroll" id="suggested-list">
+                        <!-- Suggested posts cards -->
+                    </div>
+                </div>
+
+                <div class="feed-header">
+                    <h3 class="section-title">KNOWLEDGE FEED</h3>
+                    <div class="feed-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="recent">Recent</button>
+                    </div>
+                </div>
+
+                <div id="posts-list" class="posts-container">
+                    <!-- Posts will be injected here -->
+                    <div class="loading-spinner" id="feed-loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search View -->
+            <section id="search-view" class="view hidden">
+                <div class="search-form-container glass-panel">
+                    <h3 class="glow-text" style="margin-bottom: 15px;">MEDICAL NEXUS SEARCH</h3>
+                    <div class="search-grid">
+                        <div class="form-group">
+                            <label>General Keywords (Doctors, Diseases)</label>
+                            <input type="text" id="search-input" placeholder="e.g. Dr. Smith, Arrhythmia...">
+                        </div>
+                        <div class="form-group">
+                            <label>Symptoms</label>
+                            <input type="text" id="search-symptoms" placeholder="e.g. Chest pain, Fever">
+                        </div>
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="number" id="search-age" placeholder="e.g. 45">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <select id="search-gender">
+                                <option value="">Any</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>BP (Systolic/Diastolic)</label>
+                            <input type="text" id="search-bp" placeholder="e.g. 120/80">
+                        </div>
+                        <div class="form-group">
+                            <label>Sugar Level</label>
+                            <input type="text" id="search-sugar" placeholder="e.g. 140">
+                        </div>
+                        <div class="form-group">
+                            <label>Heart Rate</label>
+                            <input type="text" id="search-hr" placeholder="e.g. 72">
+                        </div>
+                        <div class="form-group">
+                            <label>Duration</label>
+                            <input type="text" id="search-duration" placeholder="e.g. 3 days">
+                        </div>
+                    </div>
+                    <button id="search-submit-btn" class="cyber-btn" style="margin-top: 15px; width: 100%;">SEARCH KNOWLEDGE BASE</button>
+                </div>
+                
+                <div class="search-tabs">
+                    <button class="tab-btn active" data-tab="posts">Posts</button>
+                    <button class="tab-btn" data-tab="doctors">Doctors</button>
+                </div>
+
+                <div id="search-results" class="results-container">
+                    <div class="placeholder-text">Enter criteria to search the medical nexus.</div>
+                </div>
+            </section>
+
+            <!-- Profile View -->
+            <section id="profile-view" class="view hidden">
+                <div class="profile-header glass-panel">
+                    <div class="profile-avatar-large" id="profile-avatar-lg">DS</div>
+                    <h2 id="profile-name">Dr. Name</h2>
+                    <p class="profile-specialty" id="profile-spec">Specialty</p>
+                    <p class="profile-bio" id="profile-bio">Medical professional dedicated to AI-driven diagnostics.</p>
+                    <button class="btn logout-btn" id="logout-btn">Logout</button>
+                </div>
+
+                <div class="profile-tabs">
+                    <button class="tab-btn active" data-tab="my-posts">My Posts</button>
+                    <button class="tab-btn" data-tab="notifications">Notifications</button>
+                </div>
+
+                <div id="profile-content" class="profile-posts-list">
+                    <!-- My posts or Notifications will be injected here -->
+                </div>
+            </section>
+        </main>
+
+        <!-- CREATE POST BUTTON (FAB) -->
+        <button class="fab-btn" id="open-post-modal">
+            <span>+</span>
+        </button>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="bottom-nav glass-panel">
+            <button class="nav-item active" data-view="feed-view">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Feed</span>
+            </button>
+            <button class="nav-item" data-view="search-view">
+                <span class="nav-icon">🔍</span>
+                <span class="nav-label">Search</span>
+            </button>
+            <button class="nav-item" data-view="profile-view">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">Profile</span>
+            </button>
+        </nav>
+
+        <!-- CREATE POST MODAL -->
+        <div id="post-modal" class="modal hidden">
+            <div class="modal-content glass-panel">
+                <h2 class="glow-text">SHARE KNOWLEDGE</h2>
+                <form id="create-post-form">
+                    <div class="form-group">
+                        <label>What's your latest medical finding? *</label>
+                        <textarea id="post-text" placeholder="Describe the disease or share your medical knowledge..." required></textarea>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Symptoms</label>
+                            <input type="text" id="post-symptoms" placeholder="e.g. Acute chest pain">
+                        </div>
+                        <div class="form-group">
+                            <label>Duration</label>
+                            <input type="text" id="post-duration" placeholder="e.g. 2 hours">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Age</label>
+                            <input type="number" id="post-age" placeholder="e.g. 60">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Gender</label>
+                            <select id="post-gender">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Blood Pressure</label>
+                            <input type="text" id="post-bp" placeholder="e.g. 140/90">
+                        </div>
+                        <div class="form-group">
+                            <label>Sugar Level</label>
+                            <input type="text" id="post-sugar" placeholder="e.g. 180">
+                        </div>
+                        <div class="form-group">
+                            <label>Heart Rate</label>
+                            <input type="text" id="post-hr" placeholder="e.g. 95">
+                        </div>
+                        <div class="form-group">
+                            <label>Disease Tags</label>
+                            <input type="text" id="post-tags" placeholder="e.g. Cardiology, Emergency">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Main Case Image (Optional)</label>
+                        <input type="file" id="post-image" accept="image/*">
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Lab Test Images</label>
+                            <input type="file" id="post-lab-tests" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <label>Scanning Reports</label>
+                            <input type="file" id="post-scanning" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <label>Clinical Notes</label>
+                            <input type="file" id="post-clinical" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-cancel" id="close-post-modal">Cancel</button>
+                        <button type="submit" class="cyber-btn" id="post-submit-btn">POST TO NEXUS</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- COMMENT MODAL -->
+        <div id="comment-modal" class="modal hidden">
+            <div class="modal-content glass-panel">
+                <h3 class="glow-text">COMMENTS</h3>
+                <div id="comments-list" class="comments-scroll">
+                    <!-- Comments injected here -->
+                </div>
+                <form id="add-comment-form">
+                    <input type="hidden" id="comment-post-id">
+                    <div class="form-group" style="display:flex; gap:10px; margin-top:15px;">
+                        <input type="text" id="comment-text" placeholder="Add a medical perspective..." required>
+                        <button type="submit" class="cyber-btn" style="width:auto; padding:10px 20px;">SEND</button>
+                    </div>
+                </form>
+                <div style="text-align:right; margin-top:10px;">
+                    <button class="btn btn-cancel" id="close-comment-modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script src="app.js"></script>
+</body>
+</html>

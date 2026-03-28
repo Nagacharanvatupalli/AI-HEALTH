@@ -471,6 +471,45 @@ const app = {
         app.fetchHealthSuggestions();
     },
 
+    handleMedConnectLogin: async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('mc-name').value;
+        const password = document.getElementById('mc-password').value;
+        const specialty = document.getElementById('mc-specialty').value;
+        const errorEl = document.getElementById('mc-error');
+        errorEl.innerText = '';
+
+        try {
+            // Try login first
+            let res = await fetch('/api/medconnect/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, password })
+            });
+
+            if (res.status === 401 || res.status === 404) {
+                // If fails, try register (auto-register policy)
+                res = await fetch('/api/medconnect/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, password, specialty })
+                });
+            }
+
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem('mc_token', data.token);
+                localStorage.setItem('mc_user', JSON.stringify({ id: data.id, name: data.name, specialty: data.specialty }));
+                window.location.href = '/medconnect/';
+            } else {
+                errorEl.innerText = data.message || 'Login failed.';
+            }
+        } catch (err) {
+            console.error('MedConnect login error:', err);
+            errorEl.innerText = 'Server error. Please try again.';
+        }
+    },
+
     handleDoctorLogin: (e) => {
         e.preventDefault();
         const email = document.getElementById('doctor-email').value;

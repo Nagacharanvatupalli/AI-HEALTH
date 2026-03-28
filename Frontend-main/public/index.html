@@ -41,6 +41,52 @@
                     <h2>DOCTOR TERMINAL</h2>
                     <p>Advanced anatomical analysis and patient data.</p>
                 </div>
+                <div class="role-card medconnect-card" onclick="app.showView('medconnect-login')">
+                    <div class="card-icon">🩺</div>
+                    <h2>MEDCONNECT</h2>
+                    <p>Doctor knowledge network — share discoveries &amp; discuss cases.</p>
+                    <div class="medconnect-badge">NEW</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MEDCONNECT LOGIN VIEW -->
+        <section id="medconnect-login" class="view hidden">
+            <button class="back-btn" onclick="app.showView('role-selection')">← Back</button>
+            <div class="form-container glass-panel" style="max-width:460px;">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <div style="font-size:48px;margin-bottom:8px;">🩺</div>
+                    <h2 class="glow-text" style="color:var(--mc-accent);">MEDCONNECT</h2>
+                    <p style="color:var(--text-muted);font-size:13px;letter-spacing:1px;">Doctor Knowledge Network</p>
+                </div>
+                <form id="medconnect-login-form" onsubmit="app.handleMedConnectLogin(event)">
+                    <div class="form-group">
+                        <label>Doctor Name *</label>
+                        <input type="text" id="mc-name" placeholder="e.g. Dr. Priya Sharma" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" id="mc-password" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Specialty (for new accounts)</label>
+                        <select id="mc-specialty">
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Neurology">Neurology</option>
+                            <option value="Orthopedic">Orthopedic</option>
+                            <option value="Dermatology">Dermatology</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="Oncology">Oncology</option>
+                            <option value="Radiology">Radiology</option>
+                            <option value="Psychiatry">Psychiatry</option>
+                            <option value="General Surgery">General Surgery</option>
+                            <option value="General" selected>General</option>
+                        </select>
+                    </div>
+                    <p id="mc-error" class="error-msg"></p>
+                    <button type="submit" class="cyber-btn" style="width:100%;background:rgba(180,0,255,0.15);border-color:var(--mc-accent);color:var(--mc-accent);">ENTER NETWORK</button>
+                    <p style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:12px;">New here? Just enter a name &amp; password to register automatically.</p>
+                </form>
             </div>
         </section>
 
